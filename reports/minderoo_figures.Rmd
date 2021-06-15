@@ -1,0 +1,47 @@
+---
+title: "Minderoo reporting figures"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, echo = FALSE)
+library(targets)
+library(magrittr)
+library(ggplot2)
+library(ggtext)
+
+period_dates <- lubridate::as_date(c("2020-06-01", "2021-05-31"))
+reporting_dates <- lubridate::as_date(c("2017-06-01", "2021-05-31"))
+```
+
+```{r}
+tar_load(landings)
+landings <- landings %>%
+  dplyr::mutate(date = lubridate::as_date(date), 
+                in_period = date >= period_dates[1] & date <= period_dates[2]) %>%
+  dplyr::filter(date >= reporting_dates[1], date <= reporting_dates[2])
+
+period_landings <- landings %>%
+  dplyr::filter(in_period)
+```
+
+- The reporting period is between `r period_dates[1]` and `r period_dates[2]`.
+
+- Enumerators have recorded `r scales::number(nrow(landings))` landings so far, `r scales::number(nrow(period_landings))` of those during the reporting period. 
+
+```{r fig.height=5, fig.width=10}
+landings %>%
+  dplyr::mutate(month = lubridate::floor_date(date, unit = "month")) %>%
+  dplyr::count(month, in_period) %>%
+  ggplot(aes(x = month, y = n)) +
+  geom_col(aes(fill = in_period)) +
+  scale_fill_manual(values = c("grey80", "#1a4985")) + 
+  labs(x = "", y = "Number of landings", 
+       title = "A large proportion of landings were recorded during the <strong style='color:#1a4985;'>reporting period</strong>", 
+       caption = "Montly landings recorded by enumerators in Timor leste") +
+    theme_minimal() + 
+  theme(legend.position = "none", 
+        plot.title = element_textbox_simple()) 
+```
+
+- 
