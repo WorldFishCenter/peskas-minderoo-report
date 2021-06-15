@@ -1,0 +1,5 @@
+default:
+  bucket_name: timor
+  landings: timor-landings-merged__20210613010335_c8d9ebe__.rds
+  pds_trips: pds-trips__20210614005453_c8d9ebe__.csv
+
