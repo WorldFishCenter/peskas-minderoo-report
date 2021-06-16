@@ -35,6 +35,11 @@ jobs:
       - name: Run Targets workflow
         run: docker run -v $(pwd):/home -w /home --name rstudio_container ${{ steps.build_docker.outputs.FULL_IMAGE_NAME }} make
 
+      - name: Commit changes to md report documents
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: reports/*.docx
+
       - name: Save report as an artifact
         uses: actions/upload-artifact@v2
         with:
