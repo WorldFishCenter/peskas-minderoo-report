@@ -32,3 +32,9 @@ jobs:
 
       - name: Run Targets workflow
         run: docker run -v $(pwd):/home -w /home --name rstudio_container ${{ steps.build_docker.outputs.FULL_IMAGE_NAME }} make
+
+      - name: Save report as an artifact
+        uses: actions/upload-artifact@v2
+          with:
+            name: report-output
+            path: reports/minderoo_figures.docx
