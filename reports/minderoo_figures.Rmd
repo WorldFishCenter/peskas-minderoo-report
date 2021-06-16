@@ -1,6 +1,9 @@
 ---
 title: "Minderoo reporting data"
-output: word_document
+output: 
+  github_document:
+    html_preview: false
+  word_document: default
 ---
 
 ```{r setup, include = FALSE}

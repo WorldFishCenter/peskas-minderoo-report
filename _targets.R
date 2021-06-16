@@ -31,7 +31,8 @@ load_files <- list(
 gen_report <- list(
   tar_render(
     name = report,
-    path = "reports/minderoo_figures.Rmd"
+    path = "reports/minderoo_figures.Rmd",
+    output_format = 'all'
   )
 )
 # Plan analysis ------------------------------------------------------------
