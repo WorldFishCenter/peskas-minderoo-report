@@ -30,7 +30,7 @@ jobs:
       - name: Save Google Storage Authentication
         run: |
           mkdir auth
-          echo "${{ secrets.PESKAS_DATAINGESTION_GCS_KEY }}" > auth/gcp-sa-peskas_ingestion-key.json
+          printf "%s" '${{ secrets.PESKAS_DATAINGESTION_GCS_KEY }}' > auth/gcp-sa-peskas_ingestion-key.json
 
       - name: Run Targets workflow
         run: docker run -v $(pwd):/home -w /home --name rstudio_container ${{ steps.build_docker.outputs.FULL_IMAGE_NAME }} make
