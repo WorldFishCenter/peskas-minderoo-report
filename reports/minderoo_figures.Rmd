@@ -1,6 +1,6 @@
 ---
-title: "Minderoo reporting figures"
-output: html_document
+title: "Minderoo reporting data"
+output: word_document
 ---
 
 ```{r setup, include = FALSE}
@@ -9,39 +9,200 @@ library(targets)
 library(magrittr)
 library(ggplot2)
 library(ggtext)
+library(ggdist)
 
 period_dates <- lubridate::as_date(c("2020-06-01", "2021-05-31"))
-reporting_dates <- lubridate::as_date(c("2017-06-01", "2021-05-31"))
+reporting_dates <- lubridate::as_date(c("2017-06-01", "2021-06-30"))
+
+label_date <- function(x){
+  format(x, "%b") %>%
+    stringr::str_replace("Jan", paste0("Jan\n", format(x, "%Y")))
+}
+set_date_limits <- function(x){
+  c(lubridate::floor_date(x[1], "quarter"), 
+    lubridate::ceiling_date(x[2], "quarter"))
+}
 ```
 
 ```{r}
 tar_load(landings)
+tar_load(pds_trips)
+
 landings <- landings %>%
   dplyr::mutate(date = lubridate::as_date(date), 
                 in_period = date >= period_dates[1] & date <= period_dates[2]) %>%
-  dplyr::filter(date >= reporting_dates[1], date <= reporting_dates[2])
+  dplyr::filter(date >= reporting_dates[1] & date <= reporting_dates[2]) %>%
+  dplyr::mutate(month = lubridate::floor_date(date, unit = "month")) %>%
+  dplyr::mutate(dplyr::across(dplyr::ends_with("_fishers"), as.numeric)) %>%
+  dplyr::mutate(fishers_total = 
+                  `trip_group/no_fishers/no_child_fishers` +
+                  `trip_group/no_fishers/no_men_fishers` + 
+                  `trip_group/no_fishers/no_women_fishers`)
 
 period_landings <- landings %>%
   dplyr::filter(in_period)
+
+pds_trips <- pds_trips %>%
+  dplyr::mutate(date = lubridate::as_date(Ended), 
+                last_seen = lubridate::as_datetime(`Last Seen`, format = "%a %b %d %X UTC %Y", tz = "UTC"),
+                in_period = date >= period_dates[1] & date <= period_dates[2], 
+                `Duration (Seconds)` = as.numeric(`Duration (Seconds)`)) %>%
+  # dplyr::filter(date >= reporting_dates[1], date <= reporting_dates[2]) %>%
+  dplyr::mutate(month = lubridate::floor_date(date, unit = "month"), 
+                month_last_seen = lubridate::floor_date(lubridate::as_date(last_seen), unit = "month")) 
+
+period_pds <- pds_trips %>%
+  dplyr::filter(in_period)
 ```
 
-- The reporting period is between `r period_dates[1]` and `r period_dates[2]`.
 
-- Enumerators have recorded `r scales::number(nrow(landings))` landings so far, `r scales::number(nrow(period_landings))` of those during the reporting period. 
+- This report uses data of up to `r max(landings$date)` for the landing surveys and `r max(lubridate::as_date(pds_trips$Ended))` for the PDS tracking.
 
-```{r fig.height=5, fig.width=10}
+- The reporting period in focus here is between `r period_dates[1]` and `r period_dates[2]`.
+
+- The Minderoo funding helped us increase the amount of data collected and hence the quality of our estimates. Enumerators have recorded `r scales::number(nrow(landings))` landings so far, `r scales::number(nrow(period_landings))` of those during the reporting period. 
+
+- The Minderoo funding also helped us increase the geographic spread of the data collection. We were able to survey up to `r dplyr::n_distinct(period_landings$landing_site_name)` landing sites across East Timor during the reporting period. 
+
+- The increase in surveys and geographical spread allowed us to capture the work of `r scales::number(sum(period_landings$fishers_total, na.rm = T))` (non-unique) artisanal fishers during the reporting period. 
+
+- Using the PDS trackers, we have tracked a total of `r dplyr::n_distinct(pds_trips$IMEI)` boats. The number of tracked boats has decreased over the reporting period. Presumably mainly due to malfunction or physical damage.
+
+- The trackers have recorded a total of `r scales::number(nrow(pds_trips))` trips, `r scales::number(nrow(period_pds))` of them during the reporting period. A smaller number than in previous periods. 
+
+- Despite the smaller number of trips the effort of each fishing trip has been relatively stable. 
+
+```{r fig.height=4, fig.width=8}
 landings %>%
-  dplyr::mutate(month = lubridate::floor_date(date, unit = "month")) %>%
   dplyr::count(month, in_period) %>%
   ggplot(aes(x = month, y = n)) +
   geom_col(aes(fill = in_period)) +
-  scale_fill_manual(values = c("grey80", "#1a4985")) + 
+  scale_fill_manual(values = c("grey70", "#1a4985")) + 
+  scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Number of landings", 
-       title = "A large proportion of landings were recorded during the <strong style='color:#1a4985;'>reporting period</strong>", 
+       title = "The number of landings <strong>surveys increased</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
        caption = "Montly landings recorded by enumerators in Timor leste") +
     theme_minimal() + 
   theme(legend.position = "none", 
-        plot.title = element_textbox_simple()) 
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
 ```
 
-- 
+```{r ,fig.height=4, fig.width=8}
+landings %>%
+  dplyr::group_by(month, in_period) %>%
+  dplyr::summarise(landing_sites = dplyr::n_distinct(landing_site_name), .groups = "drop") %>%
+  ggplot(aes(x = month, y = landing_sites)) +
+  geom_col(aes(fill = in_period)) +
+  scale_fill_manual(values = c("grey70", "#1a4985")) + 
+  scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
+  labs(x = "", y = "Number of sites", 
+       title = "The landings <strong>surveys's coverage was higher</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
+       caption = "Montly number of landings sites surveyed by enumerators in Timor leste") +
+    theme_minimal() + 
+  theme(legend.position = "none", 
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
+```
+
+```{r,fig.height=4.5, fig.width=8}
+landings %>%
+  dplyr::group_by(month, in_period) %>%
+  dplyr::summarise(dplyr::across(dplyr::ends_with("_fishers"), sum, na.rm = T), 
+                   .groups = "drop") %>%
+  tidyr::pivot_longer(dplyr::ends_with("_fishers")) %>%
+  dplyr::mutate(name = stringr::str_replace(string = name, 
+                                            pattern = stringr::regex('.*?([a-z]*)_[a-z]*$'),
+                                            replacement = "\\1")) %>%
+  dplyr::mutate(name = stringr::str_replace(string = name, 
+                                            pattern = "child", 
+                                            replacement = "children")) %>%
+  dplyr::mutate(name = forcats::fct_reorder(name, value)) %>%
+  ggplot(aes(x = month, y = value)) + 
+  geom_col(aes(alpha = name, fill = in_period)) +
+  guides(fill = "none", alpha = guide_legend(override.aes = list(fill = "#1a4985"))) +
+  scale_fill_manual(values = c("grey70", "#1a4985")) +
+  scale_alpha_manual(values = rev(c(1,0.8, 0.6))) +
+  scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
+  theme_minimal()  + 
+  labs(x = "", y = "Number of fishers", 
+       title = "The number of <strong>fishers reached out was higher</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
+       caption = "Montly number of (non-unique) fishers' involved in the surveyed landings by enumerators in Timor leste") +
+    theme_minimal() + 
+  theme(legend.position = "bottom", 
+        legend.title = element_blank(),
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines")))
+```
+
+```{r}
+
+
+```
+
+```{r, fig.height=4.5, fig.width=8}
+first_last_seen <- pds_trips %>%
+  dplyr::group_by(IMEI) %>%
+  dplyr::summarise(first_seen = min(month), 
+                   last_seen = max(month_last_seen)) %>%
+  tidyr::pivot_longer(dplyr::ends_with("seen"), values_to = "month")
+
+month_seq <- function(x){
+  seq.Date(min(x), max(x), "month")
+}
+
+first_last_seen %>%
+  dplyr::group_by(IMEI) %>%
+  tidyr::complete(IMEI, month = month_seq(month)) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(name = "present") %>%
+  dplyr::bind_rows(first_last_seen) %>%
+  dplyr::mutate(in_period = month >= period_dates[1] & month <= period_dates[2]) %>% 
+  dplyr::filter(!(name == "last_seen" & month == max(month))) %>%
+  dplyr::mutate(name = stringr::str_replace_all(name, c(present = "Total", 
+                                                        first_seen = "In", 
+                                                        last_seen = "Out"))) %>%
+  dplyr::count(month, in_period, name) %>%
+  ggplot(aes(x = month, y = n)) + 
+  geom_col(aes(fill = in_period)) +
+  facet_grid("name", scales = "free_y", space = "free_y") +
+  scale_fill_manual(values = c("grey70", "#1a4985"), aesthetics = c("fill", "colour")) + 
+  scale_y_continuous(breaks = seq(0, 1000, by = 100)) +
+  scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
+  labs(x = "", y = "Number", 
+       title = "The number of <strong>boats tracked has decreased</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
+       caption = "Montly number of boats with functioning tracking devices in Timor leste") +
+  theme_minimal() + 
+  theme(legend.position = "none",
+        panel.spacing = grid::unit(1, "lines"),
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
+```
+
+```{r,fig.height=4.5, fig.width=8}
+pds_trips %>%
+  dplyr::count(month, in_period) %>%
+  ggplot(aes(x = month, y = n)) +
+  geom_col(aes(fill = in_period)) +
+  scale_fill_manual(values = c("grey70", "#1a4985")) + 
+  scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
+  labs(x = "", y = "Number of tracked trips", 
+       title = "The number of <strong>trips recorded was lower</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
+       caption = "Montly trips tracked by PDS devices in Timor leste") +
+    theme_minimal() + 
+  theme(legend.position = "none", 
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
+```
+
+```{r, fig.height=4.5, fig.width=8}
+pds_trips %>%
+  ggplot(aes(x = month, y = `Duration (Seconds)`/3600)) +
+  stat_pointinterval(aes(colour = in_period), .width = c(0.66, 0.9)) +
+  scale_fill_manual(values = c("grey70", "#1a4985"), aesthetics = c("fill", "colour")) + 
+  scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
+  labs(x = "", y = "Effort (hours)", 
+       title = "The tracked trips' <strong>effort has been stable</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
+       caption = "Distriburion of effort (hours) of tracked trips Timor leste. Lines show the 33-66% and 10-90% percentiles.") +
+  theme_minimal() + 
+  theme(legend.position = "none", 
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
+
+```
+
+
