@@ -1,6 +1,7 @@
 # Prepare workspace -------------------------------------------------------
 
 library(targets)
+library(tarchetypes)
 
 # load functions
 f <- lapply(list.files(path = here::here("R"), full.names = TRUE,
@@ -25,9 +26,18 @@ load_files <- list(
   )
 )
 
+# Generate report ---------------------------------------------------------
+
+gen_report <- list(
+  tar_render(
+    name = report,
+    path = "reports/minderoo_figures.Rmd"
+  )
+)
 # Plan analysis ------------------------------------------------------------
 
 list(
-  load_files
+  load_files,
+  gen_report
 )
 
