@@ -35,6 +35,6 @@ jobs:
 
       - name: Save report as an artifact
         uses: actions/upload-artifact@v2
-          with:
-            name: report-output
-            path: reports/minderoo_figures.docx
+        with:
+          name: report-output
+          path: reports/minderoo_figures.docx
