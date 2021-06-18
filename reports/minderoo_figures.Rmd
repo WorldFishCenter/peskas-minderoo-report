@@ -59,21 +59,21 @@ period_pds <- pds_trips %>%
 ```
 
 
-- This report uses data of up to `r max(landings$date)` for the landing surveys and `r max(lubridate::as_date(pds_trips$Ended))` for the PDS tracking.
+- This report uses data of up to `r max(landings$date)` for the landing surveys and `r max(lubridate::as_date(pds_trips$Ended))` for the vessel tracking (Pelagic Data Systems).
 
 - The reporting period in focus here is between `r period_dates[1]` and `r period_dates[2]`.
 
-- The Minderoo funding helped us increase the amount of data collected and hence the quality of our estimates. Enumerators have recorded `r scales::number(nrow(landings))` landings so far, `r scales::number(nrow(period_landings))` of those during the reporting period. 
+- The Minderoo funding helped us to continue and increase the amount of data collected and hence the quality of our estimates. Enumerators have recorded `r scales::number(nrow(landings))` landings so far, `r scales::number(nrow(period_landings))` of those during the reporting period. 
 
-- The Minderoo funding also helped us increase the geographic spread of the data collection. We were able to survey up to `r dplyr::n_distinct(period_landings$landing_site_name)` landing sites across East Timor during the reporting period. 
+- The Minderoo funding also helped us to increase the geographic spread of the data collection. We were able to survey up to `r dplyr::n_distinct(period_landings$landing_site_name)` landing sites across Timor-Leste during the reporting period. 
 
-- The increase in surveys and geographical spread allowed us to capture the work of `r scales::number(sum(period_landings$fishers_total, na.rm = T))` (non-unique) artisanal fishers during the reporting period. 
+- The increase in surveys and geographical spread allowed us to capture the work of `r scales::number(sum(period_landings$fishers_total, na.rm = T))` (non-unique) small-scale fishers during the reporting period. 
 
-- Using the PDS trackers, we have tracked a total of `r dplyr::n_distinct(pds_trips$IMEI)` boats. The number of tracked boats has decreased over the reporting period. Presumably mainly due to malfunction or physical damage.
+- Using the vessel trackers, we have tracked a total of `r dplyr::n_distinct(pds_trips$IMEI)` boats. The number of tracked boats has decreased over the reporting period. Presumably mainly due to deterioration, malfunction or physical damage to the devices.
 
-- The trackers have recorded a total of `r scales::number(nrow(pds_trips))` trips, `r scales::number(nrow(period_pds))` of them during the reporting period. A smaller number than in previous periods. 
+- The trackers have recorded a total of `r scales::number(nrow(pds_trips))` trips, `r scales::number(nrow(period_pds))` of them during the reporting period. A smaller number than in previous periods of similar length. 
 
-- Despite the smaller number of trips the effort of each fishing trip has been relatively stable. 
+- Despite the smaller number of trips the effort of each fishing trip has remained relatively stable. 
 
 ```{r fig.height=4, fig.width=8}
 landings %>%
@@ -84,7 +84,7 @@ landings %>%
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Number of landings", 
        title = "The number of landings <strong>surveys increased</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Montly landings recorded by enumerators in Timor leste") +
+       caption = "Monthly landings recorded by enumerators in Timor Leste") +
     theme_minimal() + 
   theme(legend.position = "none", 
         plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
@@ -100,7 +100,7 @@ landings %>%
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Number of sites", 
        title = "The landings <strong>surveys's coverage was higher</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Montly number of landings sites surveyed by enumerators in Timor leste") +
+       caption = "Monthly number of landings sites surveyed by enumerators in Timor-Leste") +
     theme_minimal() + 
   theme(legend.position = "none", 
         plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
@@ -128,7 +128,7 @@ landings %>%
   theme_minimal()  + 
   labs(x = "", y = "Number of fishers", 
        title = "The number of <strong>fishers reached out was higher</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Montly number of (non-unique) fishers' involved in the surveyed landings by enumerators in Timor leste") +
+       caption = "Monthly number of (non-unique) fishers' involved in the surveyed landings by enumerators in Timor-Leste") +
     theme_minimal() + 
   theme(legend.position = "bottom", 
         legend.title = element_blank(),
@@ -171,7 +171,7 @@ first_last_seen %>%
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Number", 
        title = "The number of <strong>boats tracked has decreased</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Montly number of boats with functioning tracking devices in Timor leste") +
+       caption = "Monthly number of boats with functioning tracking devices in Timor-Leste") +
   theme_minimal() + 
   theme(legend.position = "none",
         panel.spacing = grid::unit(1, "lines"),
@@ -187,7 +187,7 @@ pds_trips %>%
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Number of tracked trips", 
        title = "The number of <strong>trips recorded was lower</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Montly trips tracked by PDS devices in Timor leste") +
+       caption = "Monthly trips tracked with PDS trackers in Timor-Leste") +
     theme_minimal() + 
   theme(legend.position = "none", 
         plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
@@ -201,7 +201,7 @@ pds_trips %>%
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Effort (hours)", 
        title = "The tracked trips' <strong>effort has been stable</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Distriburion of effort (hours) of tracked trips Timor leste. Lines show the 33-66% and 10-90% percentiles.") +
+       caption = "Distribution of effort (hours) of tracked trips Timor-Leste. Lines show the 33-66% and 10-90% percentiles.") +
   theme_minimal() + 
   theme(legend.position = "none", 
         plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
