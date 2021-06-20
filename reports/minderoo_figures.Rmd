@@ -13,6 +13,9 @@ library(magrittr)
 library(ggplot2)
 library(ggtext)
 library(ggdist)
+library(ggchicklet)
+library(ggthemes)
+
 
 period_dates <- lubridate::as_date(c("2020-06-01", "2021-05-31"))
 reporting_dates <- lubridate::as_date(c("2017-06-01", "2021-06-30"))
@@ -59,21 +62,21 @@ period_pds <- pds_trips %>%
 ```
 
 
-- This report uses data of up to `r max(landings$date)` for the landing surveys and `r max(lubridate::as_date(pds_trips$Ended))` for the vessel tracking (Pelagic Data Systems).
+- This report uses data of up to `r max(landings$date)` for the landing surveys and `r max(lubridate::as_date(pds_trips$Ended))` for the PDS tracking.
 
 - The reporting period in focus here is between `r period_dates[1]` and `r period_dates[2]`.
 
-- The Minderoo funding helped us to continue and increase the amount of data collected and hence the quality of our estimates. Enumerators have recorded `r scales::number(nrow(landings))` landings so far, `r scales::number(nrow(period_landings))` of those during the reporting period. 
+- The Minderoo funding helped us increase the amount of data collected and hence the quality of our estimates. Enumerators have recorded `r scales::number(nrow(landings))` landings so far, `r scales::number(nrow(period_landings))` of those during the reporting period. 
 
-- The Minderoo funding also helped us to increase the geographic spread of the data collection. We were able to survey up to `r dplyr::n_distinct(period_landings$landing_site_name)` landing sites across Timor-Leste during the reporting period. 
+- The Minderoo funding also helped us increase the geographic spread of the data collection. We were able to survey up to `r dplyr::n_distinct(period_landings$landing_site_name)` landing sites across East Timor during the reporting period. 
 
-- The increase in surveys and geographical spread allowed us to capture the work of `r scales::number(sum(period_landings$fishers_total, na.rm = T))` (non-unique) small-scale fishers during the reporting period. 
+- The increase in surveys and geographical spread allowed us to capture the work of `r scales::number(sum(period_landings$fishers_total, na.rm = T))` (non-unique) artisanal fishers during the reporting period. 
 
-- Using the vessel trackers, we have tracked a total of `r dplyr::n_distinct(pds_trips$IMEI)` boats. The number of tracked boats has decreased over the reporting period. Presumably mainly due to deterioration, malfunction or physical damage to the devices.
+- Using the PDS trackers, we have tracked a total of `r dplyr::n_distinct(pds_trips$IMEI)` boats. The number of tracked boats has decreased over the reporting period. Presumably mainly due to malfunction or physical damage.
 
-- The trackers have recorded a total of `r scales::number(nrow(pds_trips))` trips, `r scales::number(nrow(period_pds))` of them during the reporting period. A smaller number than in previous periods of similar length. 
+- The trackers have recorded a total of `r scales::number(nrow(pds_trips))` trips, `r scales::number(nrow(period_pds))` of them during the reporting period. A smaller number than in previous periods. 
 
-- Despite the smaller number of trips the effort of each fishing trip has remained relatively stable. 
+- Despite the smaller number of trips the effort of each fishing trip has been relatively stable. 
 
 ```{r fig.height=4, fig.width=8}
 landings %>%
@@ -84,7 +87,7 @@ landings %>%
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Number of landings", 
        title = "The number of landings <strong>surveys increased</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Monthly landings recorded by enumerators in Timor Leste") +
+       caption = "Montly landings recorded by enumerators in Timor leste") +
     theme_minimal() + 
   theme(legend.position = "none", 
         plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
@@ -100,7 +103,7 @@ landings %>%
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Number of sites", 
        title = "The landings <strong>surveys's coverage was higher</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Monthly number of landings sites surveyed by enumerators in Timor-Leste") +
+       caption = "Montly number of landings sites surveyed by enumerators in Timor leste") +
     theme_minimal() + 
   theme(legend.position = "none", 
         plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
@@ -128,17 +131,107 @@ landings %>%
   theme_minimal()  + 
   labs(x = "", y = "Number of fishers", 
        title = "The number of <strong>fishers reached out was higher</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Monthly number of (non-unique) fishers' involved in the surveyed landings by enumerators in Timor-Leste") +
+       caption = "Montly number of (non-unique) fishers' involved in the surveyed landings by enumerators in Timor leste") +
     theme_minimal() + 
   theme(legend.position = "bottom", 
         legend.title = element_blank(),
         plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines")))
 ```
 
-```{r}
 
-
+```{r, fig.height=4.5, fig.width=8}
+landings %>%
+  dplyr::filter(!is.na(total_catch_value)) %>%
+  ggplot(aes(x = month, y = total_catch_value)) +
+  stat_pointinterval(aes(colour = in_period), .width = c(0.66, 0.9)) +
+  scale_fill_manual(values = c("grey70", "#1a4985"), aesthetics = c("fill", "colour")) +
+  scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
+  labs(x = "", y = "Catch value",
+       title = "The <strong>total catch value has been stable</strong> during the <span style='color:#1a4985;'>reporting period</span>",
+       caption = "Distribution of total catches value in Timor leste. Lines show the 33-66% and 10-90% percentiles.") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines")))
 ```
+
+
+```{r, fig.height=4.5, fig.width=8,message = FALSE}
+gear_type_groups <-landings %>%
+  dplyr::filter(!is.na(`trip_group/gear_type`)) %>%
+  dplyr::group_by(month,`trip_group/gear_type`) %>%
+  dplyr::tally(name = "n_group")
+
+landings %>%
+  dplyr::filter(!is.na(`trip_group/gear_type`)) %>%
+  dplyr::group_by(month) %>%
+  dplyr::tally() %>%
+  dplyr::left_join(gear_type_groups) %>%
+  dplyr::mutate(n_perc=(n_group/n)*100,
+                gear_type=`trip_group/gear_type`,
+                gear_type=dplyr::case_when(
+                  gear_type=="GN"~"Gill net",
+                  gear_type=="HL"~"Hand line",
+                  gear_type=="LL"~"Long line",
+                  gear_type=="SG"~"Spear gun",
+                  gear_type=="CN"~"Cast net",
+                  gear_type=="MC"~"Manual collection",
+                  gear_type=="BS"~"Beach seine",
+                  gear_type=="SN"~"Seine net",
+                  gear_type=="TP"~"Trap")) %>% 
+  ggplot(aes(x = month, y = n_perc,fill=gear_type)) +
+  geom_chicklet(width = 27.5,alpha=0.7,na.rm = TRUE) +
+  geom_vline(xintercept = as.numeric(as.Date("2020-06-01")),size=1,color="#1a4985",linetype=6)+
+  scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
+  ggthemes::scale_fill_tableau("Miller Stone", name = NULL,direction=1) +
+  theme_minimal()  +
+  labs(x = "", y = "Gear type usage (%)",
+       title = "Relative usage of <strong>gear type  has been stable </strong> during the <span style='color:#1a4985;'>reporting period</span>",
+       caption = "Percentage of different gear types usage on the monthly scale in Timor leste") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines")))
+```
+
+
+```{r, fig.height=4.5, fig.width=8,message = FALSE}
+habitat_groups <-landings %>%
+  dplyr::filter(!is.na(`trip_group/habitat_boat`)) %>%
+  dplyr::group_by(month,`trip_group/habitat_boat`) %>%
+  dplyr::tally(name = "n_group")
+
+landings %>%
+  dplyr::filter(!is.na(`trip_group/habitat_boat`)) %>%
+  dplyr::group_by(month) %>%
+  dplyr::tally() %>%
+  dplyr::left_join(habitat_groups) %>%
+    dplyr::mutate(n_perc=(n_group/n)*100,
+                habitat=`trip_group/habitat_boat`,
+                habitat=dplyr::case_when(
+                  habitat=="1"~"Reef",
+                  habitat=="2"~"FAD",
+                  habitat=="3"~"Deep",
+                  habitat=="4"~"Beach",
+                  habitat=="5"~"Traditional FAD",
+                  habitat=="6"~"Mangrove",
+                  habitat=="7"~"Seagrass")) %>% 
+  dplyr::mutate(n_perc=(n_group/n)*100) %>% 
+  ggplot(aes(x = month, y = n_perc,fill=habitat)) +
+  geom_chicklet(width = 27.5,alpha=0.7,na.rm = TRUE) +
+  geom_vline(xintercept = as.numeric(as.Date("2020-06-01")),size=1,color="#1a4985",linetype=6)+
+  scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
+  ggthemes::scale_fill_tableau("Tableau 20", name = NULL) +
+  theme_minimal()  +
+  labs(x = "", y = "Exploited habitat (%)",
+       title = "<strong>Deep habitat was more explited </strong> during the <span style='color:#1a4985;'>reporting period</span>",
+       caption = "Percentage of exploited habitat by fishers in Timor leste on the monthly scale") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines")))
+```
+
+
 
 ```{r, fig.height=4.5, fig.width=8}
 first_last_seen <- pds_trips %>%
@@ -171,7 +264,7 @@ first_last_seen %>%
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Number", 
        title = "The number of <strong>boats tracked has decreased</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Monthly number of boats with functioning tracking devices in Timor-Leste") +
+       caption = "Montly number of boats with functioning tracking devices in Timor leste") +
   theme_minimal() + 
   theme(legend.position = "none",
         panel.spacing = grid::unit(1, "lines"),
@@ -187,7 +280,7 @@ pds_trips %>%
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Number of tracked trips", 
        title = "The number of <strong>trips recorded was lower</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Monthly trips tracked with PDS trackers in Timor-Leste") +
+       caption = "Montly trips tracked by PDS devices in Timor leste") +
     theme_minimal() + 
   theme(legend.position = "none", 
         plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
@@ -195,17 +288,17 @@ pds_trips %>%
 
 ```{r, fig.height=4.5, fig.width=8}
 pds_trips %>%
+  dplyr::filter(!is.na(`Duration (Seconds)`)) %>% 
   ggplot(aes(x = month, y = `Duration (Seconds)`/3600)) +
   stat_pointinterval(aes(colour = in_period), .width = c(0.66, 0.9)) +
   scale_fill_manual(values = c("grey70", "#1a4985"), aesthetics = c("fill", "colour")) + 
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   labs(x = "", y = "Effort (hours)", 
        title = "The tracked trips' <strong>effort has been stable</strong> during the <span style='color:#1a4985;'>reporting period</span>", 
-       caption = "Distribution of effort (hours) of tracked trips Timor-Leste. Lines show the 33-66% and 10-90% percentiles.") +
+       caption = "Distriburion of effort (hours) of tracked trips Timor leste. Lines show the 33-66% and 10-90% percentiles.") +
   theme_minimal() + 
   theme(legend.position = "none", 
         plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines"))) 
 
 ```
-
 

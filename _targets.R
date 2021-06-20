@@ -22,7 +22,7 @@ load_files <- list(
   ),
   tar_target(
      name = pds_trips,
-     command = read_csv_gc(config$pds_trips, config$bucket_name)
+     command = read_rds_gc(config$pds_trips, config$bucket_name)
   )
 )
 
