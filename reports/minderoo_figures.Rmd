@@ -15,6 +15,7 @@ library(ggtext)
 library(ggdist)
 library(ggchicklet)
 library(ggthemes)
+library(cowplot)
 
 
 period_dates <- lubridate::as_date(c("2020-06-01", "2021-06-18"))
@@ -238,6 +239,83 @@ landings %>%
 ```
 
 
+```{r, fig.height=7, fig.width=8,message = FALSE}
+tot_catches <-
+landings %>%
+  tidyr::unnest(cols=species_group) %>%
+  dplyr::filter(!is.na(species) & !is.na(landing_site_name) & !species==0) %>%
+  nrow()
+
+obs_per_sites <-
+  landings %>%
+  tidyr::unnest(cols=species_group) %>%
+  dplyr::filter(!is.na(species) & !is.na(landing_site_name) & !species==0) %>%
+  dplyr::count(landing_site_name) %>%
+  dplyr::rename(tot_obs_site=n)
+
+species_freq <-
+  landings %>%
+  tidyr::unnest(cols=species_group) %>%
+  dplyr::filter(!is.na(species) & !is.na(landing_site_name) & !species==0) %>%
+  dplyr::mutate(n=as.numeric(n)) %>%
+  dplyr::count(species) %>%
+  dplyr::mutate(freq_species=(n/tot_catches)*100) %>%
+  dplyr::arrange(desc(freq_species)) %>%
+  dplyr::mutate(cumspe=cumsum(freq_species)) %>%
+  dplyr::select(species,cumspe) 
+  
+
+p1 <-
+  obs_per_sites %>%
+  ggplot() +
+  geom_point(aes(x = reorder(as.numeric(landing_site_name),tot_obs_site),y=tot_obs_site),
+             alpha=0.5,na.rm = TRUE,size=2.5) +
+  geom_segment(aes(y = 0,x = landing_site_name,yend = tot_obs_site,xend = landing_site_name),
+               color = "black",alpha=0.5)+
+  theme_minimal()  +
+  labs(x = "", y = "Number of landings",
+       caption = "Distribution of species catches and landings among the different landing sites") +
+  theme_minimal() +
+  coord_flip()+
+  theme(legend.position = "right",
+        legend.title = element_blank(),
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines")),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+
+p2 <-
+  landings %>%
+  tidyr::unnest(cols=species_group) %>%
+  dplyr::filter(!is.na(species) & !is.na(landing_site_name) & !species==0) %>%
+  dplyr::group_by(landing_site_name,species) %>% 
+  dplyr::count() %>% 
+  dplyr::left_join(species_freq) %>%
+  dplyr::left_join(obs_per_sites) %>%
+  dplyr::mutate(n_perc=(n/tot_obs_site)*100,
+                species=dplyr::case_when(cumspe>75~"other",
+                                         TRUE~species)) %>% 
+  dplyr::group_by(landing_site_name,species) %>% 
+  dplyr::summarise(n_perc=sum(n_perc),n=sum(n)) %>% 
+ggplot(aes(x = reorder(landing_site_name,n),y=n_perc,fill=species)) +
+  geom_chicklet(alpha=1,na.rm = TRUE) +
+  ggthemes::scale_fill_tableau("Tableau 20", name = NULL,direction = 1) +
+  theme_minimal()  +
+  labs(x = "Landing site", y = "Species distribution (%)")+
+  theme_minimal() +
+  coord_flip()+
+  theme(legend.position = "left",
+        legend.title = element_blank(),
+        plot.title = element_textbox_simple(margin = grid::unit(c(0,0,1,0), "lines")))
+
+p_grid <-
+plot_grid(p2,
+          p1+theme(plot.margin = unit(c(0,0,0,-0.25), "cm")),
+          rel_widths=c(2.5,1),align="h")
+
+title <- ggdraw() + draw_label("Site 6 receives most of the landings. The species distribution 
+                               is quite heterogeneous among the sites")
+plot_grid(title, p_grid, ncol=1, rel_heights=c(0.1, 1)) 
+```
 
 ```{r, fig.height=4.5, fig.width=8}
 first_last_seen <- pds_trips %>%
