@@ -1,7 +1,6 @@
 ## Authentication
 auth/*
 .env*
-
 ## R & Rstudio
 .Rhistory
 .RData
@@ -22,7 +21,6 @@ vignettes/*.pdf
 .Renviron
 .drake/*
 _targets/*
-
 ## OS X
 .DS_Store
 .AppleDouble
@@ -31,12 +29,11 @@ Icon
 ._*
 .Spotlight-V100
 .Trashes
-
 ## Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
-
 # Report outputs
 *.html
+.httr-oauth

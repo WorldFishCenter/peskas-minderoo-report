@@ -23,8 +23,15 @@ load_files <- list(
   tar_target(
      name = pds_trips,
      command = read_csv_gc(config$pds_trips, config$bucket_name)
-  )
-)
+  ),
+  tar_target(
+    name = sites_url,
+    command = readLines("auth/sites-url")#peskdat sites-sheet gdrive url
+  ),
+  tar_target(
+    name = species_url,
+    command = readLines("auth/species-url")#peskdat species-sheet gdrive url
+  ))
 
 # Generate report ---------------------------------------------------------
 
