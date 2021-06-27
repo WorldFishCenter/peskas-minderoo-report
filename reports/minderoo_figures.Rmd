@@ -7,7 +7,7 @@ output:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE, echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE, echo = FALSE, dev =c("png","pdf"))
 library(targets)
 library(magrittr)
 library(ggplot2)
