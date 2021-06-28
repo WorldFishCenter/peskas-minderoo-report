@@ -18,8 +18,8 @@ library(cowplot)
 library(gsheet)
 
 
-period_dates <- lubridate::as_date(c("2020-06-01", "2021-05-31"))
-reporting_dates <- lubridate::as_date(c("2017-06-01", "2021-06-30"))
+period_dates <- lubridate::as_date(c("2020-06-01", "2021-06-13"))
+reporting_dates <- lubridate::as_date(c("2017-06-01", "2021-06-13"))
 
 label_date <- function(x){
   format(x, "%b") %>%
@@ -45,10 +45,11 @@ species_codes <- gsheet::gsheet2tbl(species_url) %>%
   dplyr::rename(species=species_code) %>% 
   dplyr::mutate(species=as.character(species))
 
-landings <- 
-  landings %>% 
-  dplyr::right_join(sites_codes) %>% 
-  dplyr::mutate(landing_site_name=site_name) %>% 
+landings <-
+  landings %>%
+  dplyr::right_join(sites_codes) %>%
+  dplyr::filter(!landing_site_name %in% c(35:39)) %>%# drop Conservation International sites
+  dplyr::mutate(landing_site_name=site_name) %>%
   dplyr::select(-site_name)
 
 
@@ -213,9 +214,9 @@ landings %>%
                   gear_type=="TP"~"Trap")) %>%
   ggplot(aes(x = month, y = n_perc,fill=gear_type)) +
   geom_chicklet(width = 27.5,alpha=0.7,na.rm = TRUE) +
-  annotate("segment", as.Date("2020-06-01"), xend = as.Date("2021-06-30"), y = -1, yend = -1, colour = "#1a4985",
+  annotate("segment", as.Date("2020-06-01"), xend = as.Date("2021-06-13"), y = -1, yend = -1, colour = "#1a4985",
            size=1, alpha=0.8,arrow=arrow(ends = "both",length = unit(0.075, "inches")))+
-  annotate("segment", as.Date("2020-06-01"), xend = as.Date("2021-06-30"), y = 101, yend = 101, colour = "#1a4985",
+  annotate("segment", as.Date("2020-06-01"), xend = as.Date("2021-06-13"), y = 101, yend = 101, colour = "#1a4985",
            size=1, alpha=0.8,arrow=arrow(ends = "both",length = unit(0.075, "inches")))+
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   ggthemes::scale_fill_tableau("Miller Stone", name = NULL,direction=1) +
@@ -253,9 +254,9 @@ landings %>%
   dplyr::mutate(n_perc=(n_group/n)*100) %>%
   ggplot(aes(x = month, y = n_perc,fill=habitat)) +
   geom_chicklet(width = 27.5,alpha=0.7,na.rm = TRUE) +
-  annotate("segment", as.Date("2020-06-01"), xend = as.Date("2021-06-30"), y = -1, yend = -1, colour = "#1a4985",
+  annotate("segment", as.Date("2020-06-01"), xend = as.Date("2021-06-13"), y = -1, yend = -1, colour = "#1a4985",
            size=1, alpha=0.8,arrow=arrow(ends = "both",length = unit(0.075, "inches")))+
-  annotate("segment", as.Date("2020-06-01"), xend = as.Date("2021-06-30"), y = 101, yend = 101, colour = "#1a4985",
+  annotate("segment", as.Date("2020-06-01"), xend = as.Date("2021-06-13"), y = 101, yend = 101, colour = "#1a4985",
            size=1, alpha=0.8,arrow=arrow(ends = "both",length = unit(0.075, "inches")))+
   scale_x_date(date_breaks = "3 month", minor_breaks = NULL, labels = label_date, limits = set_date_limits) +
   ggthemes::scale_fill_tableau("Tableau 20", name = NULL) +
@@ -318,7 +319,7 @@ species_per_site <-
 pdat <- species_per_site
 pdat$landing_site_name <- as.factor(pdat$landing_site_name)
 
-lev_data1 <-
+lev_data <-
   pdat %>%
   dplyr::select(landing_site_name,n) %>%
   dplyr::group_by(landing_site_name) %>%
@@ -328,10 +329,10 @@ lev_data1 <-
   magrittr::extract2("landing_site_name")
 
 pdat$landing_site_name <- factor(pdat$landing_site_name,
-                  levels = lev_data1)
+                                 levels = lev_data)
 
-site_col <- ifelse(lev_data1 %in% new_sites, "#1a4985", "grey30")
-site_face <- ifelse(lev_data1 %in% new_sites, "bold", "plain")
+site_col <- ifelse(lev_data %in% new_sites, "#1a4985", "grey50")
+site_face <- ifelse(lev_data %in% new_sites, "bold", "plain")
 
 
 p2 <-

@@ -5,19 +5,19 @@ Minderoo reporting data
     and 2021-06-13 for the vessel tracking (Pelagic Data Systems).
 
   - The reporting period in focus here is between 2020-06-01 and
-    2021-05-31.
+    2021-06-13.
 
   - The Minderoo funding helped us to continue and increase the amount
     of data collected and hence the quality of our estimates.
-    Enumerators have recorded 42 014 landings so far, 15 871 of those
+    Enumerators have recorded 39 718 landings so far, 13 581 of those
     during the reporting period.
 
   - The Minderoo funding also helped us to increase the geographic
-    spread of the data collection. We were able to survey up to 25
+    spread of the data collection. We were able to survey up to 20
     landing sites across Timor-Leste during the reporting period.
 
   - The increase in surveys and geographical spread allowed us to
-    capture the work of 29 280 (non-unique) small-scale fishers during
+    capture the work of 26 378 (non-unique) small-scale fishers during
     the reporting period.
 
   - Using the vessel trackers, we have tracked a total of 420 boats. The
@@ -25,7 +25,7 @@ Minderoo reporting data
     Presumably mainly due to deterioration, malfunction or physical
     damage to the devices.
 
-  - The trackers have recorded a total of 76 165 trips, 22 686 of them
+  - The trackers have recorded a total of 76 165 trips, 23 030 of them
     during the reporting period. A smaller number than in previous
     periods of similar length.
 
